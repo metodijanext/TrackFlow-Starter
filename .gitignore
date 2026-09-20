@@ -1,0 +1,38 @@
+## Directories
+.vs/
+.vscode/
+bin/
+obj/
+dist/
+node_modules/
+.next/
+
+## Files
+*.user
+*.suo
+*.sln.iml
+.env
+.env.local
+appsettings.*.json
+*.log
+*.db
+*.sqlite
+.DS_Store
+
+## Frontend
+client/node_modules/
+client/dist/
+client/.env.local
+client/yarn.lock
+
+## IDE
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+## OS
+Thumbs.db
+.DS_Store

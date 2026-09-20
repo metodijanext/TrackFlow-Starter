@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: trackflow-sqlserver
+    environment:
+      SA_PASSWORD: "TrackFlow@2024"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - trackflow-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "TrackFlow@2024" -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trackflow-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TrackFlow;User Id=sa;Password=TrackFlow@2024;TrustServerCertificate=true;
+      - Jwt__Secret=YourSuperSecretKeyThatIsAtLeast32CharactersLong12345
+      - Jwt__Issuer=TrackFlow
+      - Jwt__Audience=TrackFlowClient
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - trackflow-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: trackflow-client
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://api:8080
+    depends_on:
+      - api
+    networks:
+      - trackflow-network
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  trackflow-network:
+    driver: bridge
