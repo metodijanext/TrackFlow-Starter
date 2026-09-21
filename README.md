@@ -38,6 +38,20 @@ This project follows **Clean Architecture** principles with **CQRS (Command Quer
 └─────────────────────────────────────────┘
 ```
 
+## ⚠️ Security Notice (For Students)
+
+**This is a learning template for academic use.** The following configurations are included for educational purposes ONLY:
+
+- **JWT Secret:** The secret in `appsettings.json` is a **dummy development key**. In production, this MUST be replaced with a cryptographically secure random string and stored in Azure Key Vault / environment variables.
+- **Database Connection:** The connection string uses LocalDB with Windows authentication (no password). For production, use proper SQL Server with secure credentials.
+- **HTTPS Certificates:** Development certificates are self-signed. Production requires valid SSL/TLS certificates.
+
+**⚠️ NEVER commit production secrets, API keys, or passwords to Git repositories.**
+
+For your labs, these defaults are safe and expected. For real-world projects, follow [OWASP security guidelines](https://owasp.org/).
+
+---
+
 ## 📋 Prerequisites
 
 ### Required Software
@@ -94,9 +108,19 @@ dotnet restore
 dotnet ef database update
 ```
 
-This will create the SQL Server LocalDB database and seed an admin user:
+This will create the SQL Server LocalDB database and seed three test users (one for each role):
+
+**Administrator:**
 - **Email:** `admin@trackflow.local`
 - **Password:** `Admin123!`
+
+**Manager:**
+- **Email:** `manager@trackflow.local`
+- **Password:** `Manager123!`
+
+**Employee:**
+- **Email:** `employee@trackflow.local`
+- **Password:** `Employee123!`
 
 #### Step 4: Run the API
 ```bash

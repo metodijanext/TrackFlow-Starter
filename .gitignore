@@ -13,7 +13,8 @@ node_modules/
 *.sln.iml
 .env
 .env.local
-appsettings.*.json
+appsettings.Local.json
+appsettings.*.Local.json
 *.log
 *.db
 *.sqlite

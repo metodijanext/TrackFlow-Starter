@@ -133,6 +133,7 @@ async Task SeedData(TrackFlowDbContext context)
     if (!await context.Users.AnyAsync())
     {
         var passwordHasher = new PasswordHasher();
+        
         var admin = new TrackFlow.Domain.Entities.User
         {
             Id = Guid.NewGuid(),
@@ -145,7 +146,31 @@ async Task SeedData(TrackFlowDbContext context)
             CreatedAt = DateTime.UtcNow
         };
 
-        context.Users.Add(admin);
+        var manager = new TrackFlow.Domain.Entities.User
+        {
+            Id = Guid.NewGuid(),
+            Email = "manager@trackflow.local",
+            FirstName = "Project",
+            LastName = "Manager",
+            PasswordHash = passwordHasher.Hash("Manager123!"),
+            Role = TrackFlow.Domain.Common.UserRole.Manager,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var employee = new TrackFlow.Domain.Entities.User
+        {
+            Id = Guid.NewGuid(),
+            Email = "employee@trackflow.local",
+            FirstName = "Team",
+            LastName = "Member",
+            PasswordHash = passwordHasher.Hash("Employee123!"),
+            Role = TrackFlow.Domain.Common.UserRole.Employee,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        context.Users.AddRange(admin, manager, employee);
         await context.SaveChangesAsync();
     }
 }
