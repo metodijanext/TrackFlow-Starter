@@ -75,5 +75,3 @@ Each ADR must follow the 7-section template above. Quality is measured by:
 3. Specificity in "Compliance" (how you will enforce the decision)
 
 ---
-
-**Pro tip:** Use AI tools (ChatGPT, Claude) to **brainstorm alternatives** and draft initial ADRs, but you must critically evaluate the output. AI-generated ADRs often skip the "Negative Consequences" or propose unrealistic "Compliance" mechanisms — your job is to make them honest and grounded in reality.
