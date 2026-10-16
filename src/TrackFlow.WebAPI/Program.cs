@@ -1,12 +1,13 @@
 using System.Text;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using MediatR;
 using TrackFlow.Application.Interfaces;
 using TrackFlow.Infrastructure.Data;
 using TrackFlow.Infrastructure.Identity;
+using TrackFlow.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,9 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(trackFlowA
 // Services
 builder.Services.AddScoped<IJwtTokenService>(_ => new JwtTokenService(jwtSecret, jwtIssuer, jwtAudience));
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+// Data access
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 
 // CORS
 builder.Services.AddCors(options =>

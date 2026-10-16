@@ -1,5 +1,7 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TrackFlow.Application.Dtos.Auth;
+using TrackFlow.Application.Features.Auth.Commands.RegisterUser;
 using TrackFlow.Application.Interfaces;
 using TrackFlow.Domain.Common;
 using TrackFlow.Domain.Entities;
@@ -14,16 +16,48 @@ public class AuthController : ControllerBase
     private readonly TrackFlowDbContext _context;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ISender _sender;
 
     public AuthController(
         TrackFlowDbContext context,
         IJwtTokenService jwtTokenService,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        ISender sender)
     {
         _context = context;
         _jwtTokenService = jwtTokenService;
         _passwordHasher = passwordHasher;
+        _sender = sender;
     }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var result = await _sender.Send(new RegisterUserCommand(request.Email, request.Password, request.FirstName, request.LastName));
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.Error });
+        }
+
+        var response = new AuthResponse
+        {
+            AccessToken = result.AccessToken!,
+            RefreshToken = result.RefreshToken!,
+            ExpiresIn = 15 * 60,
+            User = new UserDto
+            {
+                Id = result.UserId!.Value,
+                Email = result.Email!,
+                FirstName = result.FirstName!,
+                LastName = result.LastName!,
+                Role = result.Role!
+            }
+        };
+
+        return Ok(response);
+    }
+
 
     /// <summary>
     /// Login with email and password.
@@ -66,46 +100,46 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Register a new user account.
     /// </summary>
-    [HttpPost("register")]
-    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
-    {
-        if (_context.Users.Any(u => u.Email == request.Email))
-        {
-            return BadRequest(new { message = "Email already in use" });
-        }
+    //[HttpPost("register")]
+    //public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
+    //{
+    //    if (_context.Users.Any(u => u.Email == request.Email))
+    //    {
+    //        return BadRequest(new { message = "Email already in use" });
+    //    }
 
-        var newUser = new User
-        {
-            Id = Guid.NewGuid(),
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            PasswordHash = _passwordHasher.Hash(request.Password),
-            Role = UserRole.Employee,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
+    //    var newUser = new User
+    //    {
+    //        Id = Guid.NewGuid(),
+    //        Email = request.Email,
+    //        FirstName = request.FirstName,
+    //        LastName = request.LastName,
+    //        PasswordHash = _passwordHasher.Hash(request.Password),
+    //        Role = UserRole.Employee,
+    //        IsActive = true,
+    //        CreatedAt = DateTime.UtcNow
+    //    };
 
-        _context.Users.Add(newUser);
-        await _context.SaveChangesAsync();
+    //    _context.Users.Add(newUser);
+    //    await _context.SaveChangesAsync();
 
-        var (accessToken, refreshToken) = _jwtTokenService.GenerateTokenPair(newUser);
+    //    var (accessToken, refreshToken) = _jwtTokenService.GenerateTokenPair(newUser);
 
-        var response = new AuthResponse
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresIn = 15 * 60,
-            User = new UserDto
-            {
-                Id = newUser.Id,
-                Email = newUser.Email,
-                FirstName = newUser.FirstName,
-                LastName = newUser.LastName,
-                Role = newUser.Role.ToString()
-            }
-        };
+    //    var response = new AuthResponse
+    //    {
+    //        AccessToken = accessToken,
+    //        RefreshToken = refreshToken,
+    //        ExpiresIn = 15 * 60,
+    //        User = new UserDto
+    //        {
+    //            Id = newUser.Id,
+    //            Email = newUser.Email,
+    //            FirstName = newUser.FirstName,
+    //            LastName = newUser.LastName,
+    //            Role = newUser.Role.ToString()
+    //        }
+    //    };
 
-        return CreatedAtAction(nameof(Register), response);
-    }
+    //    return CreatedAtAction(nameof(Register), response);
+    //}
 }
